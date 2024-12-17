@@ -1,0 +1,8 @@
+{{ $outerContext := . }}
+{{- range $kind, $valuesPerApp := .Values.apps }}
+{{- with $outerContext }}
+{{- if $valuesPerApp.enabled | default false }}
+{{- template "sample-app.service" (list . $kind) }}
+{{ end }}
+{{- end }}
+{{- end }}

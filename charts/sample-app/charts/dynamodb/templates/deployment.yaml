@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dynamodb
+  labels:
+    app: dynamodb
+    app.kubernetes.io/name: dynamodb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dynamodb
+      app.kubernetes.io/name: dynamodb
+  template:
+    metadata:
+      labels:
+        app: dynamodb
+        app.kubernetes.io/name: dynamodb
+    spec:
+      containers:
+        - name: default
+          image: 'amazon/dynamodb-local:latest'
+          imagePullPolicy: IfNotPresent
+          args:
+            - '-jar'
+            - 'DynamoDBLocal.jar'
+            - '-sharedDb'
+            - '-optimizeDbBeforeStartup'
+            - '-dbPath'
+            - '/srv/data'
+            - '-port'
+            - '8100'
+          ports:
+            - name: http-dynamodb
+              containerPort: 8100
+          resources:
+            limits:
+              cpu: 200m
+              memory: 512Mi
+            requests:
+              cpu: 50m
+              memory: 256Mi
+          volumeMounts:
+            - name: data
+              mountPath: /srv/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: dynamodb-data

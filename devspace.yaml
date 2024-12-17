@@ -1,0 +1,136 @@
+---
+version: v2beta1
+images:
+  app:
+    image: 'sample-app:local'
+    dockerfile: Dockerfile.prod
+    context: .
+  devproxy:
+    image: 'sample-devproxy:latest'
+    dockerfile: Dockerfile-devproxy
+    context: .
+deployments:
+  app:
+    helm:
+      chart:
+        name: sample-app
+        path: ./charts/sample-app
+      valuesFiles:
+        - ./helm-values.local.yaml
+  devproxy:
+    kubectl:
+      inlineManifest: |-
+        ---
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: devproxy
+          labels:
+            app: devproxy
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              app: devproxy
+              app.kubernetes.io/name: devproxy
+          template:
+            metadata:
+              labels:
+                app: devproxy
+                app.kubernetes.io/name: devproxy
+            spec:
+              containers:
+                - name: default
+                  image: 'sample-devproxy:latest'
+                  imagePullPolicy: IfNotPresent
+                  ports:
+                    - name: http-proxy
+                      containerPort: 8080
+                  resources:
+                    limits:
+                      cpu: 200m
+                      memory: 512Mi
+                    requests:
+                      cpu: 50m
+                      memory: 128Mi
+                  readinessProbe:
+                    tcpSocket:
+                      port: http-proxy
+                    initialDelaySeconds: 3
+                    periodSeconds: 30
+                  livenessProbe:
+                    tcpSocket:
+                      port: http-proxy
+                    initialDelaySeconds: 3
+                    periodSeconds: 30
+        ---
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: devproxy
+          labels:
+            app: devproxy
+        spec:
+          selector:
+            app: devproxy
+          type: NodePort
+          ports:
+            - protocol: TCP
+              port: 8080
+              targetPort: http-proxy
+              nodePort: 30080
+dev:
+  app-api:
+    labelSelector:
+      app: sample-app-api
+    sync:
+      - path: ./:/opt/sample/
+        disableDownload: true
+        excludePaths:
+          - '.git/'
+          - '.devspace/'
+          - '.cache/'
+          - '.data/'
+          - 'node_modules/'
+          - '**/node_modules/'
+          - 'sampleid-js-core/'
+          - 'devspace.yaml'
+          - '**/__pycache__'
+          - '**/*.pyc'
+          - '**/*.pyo'
+  app-dashboard:
+    labelSelector:
+      app: sample-app-dashboard
+    sync:
+      - path: ./:/opt/sample/
+        disableDownload: true
+        excludePaths:
+          - '.git/'
+          - '.devspace/'
+          - '.cache/'
+          - '.data/'
+          - 'node_modules/'
+          - '**/node_modules/'
+          - 'sampleid-js-core/'
+          - 'devspace.yaml'
+          - '**/__pycache__'
+          - '**/*.pyc'
+          - '**/*.pyo'
+  app-internal:
+    labelSelector:
+      app: sample-app-internal
+    sync:
+      - path: ./:/opt/sample/
+        disableDownload: true
+        excludePaths:
+          - '.git/'
+          - '.devspace/'
+          - '.cache/'
+          - '.data/'
+          - 'node_modules/'
+          - '**/node_modules/'
+          - 'sampleid-js-core/'
+          - 'devspace.yaml'
+          - '**/__pycache__'
+          - '**/*.pyc'
+          - '**/*.pyo'

@@ -1,0 +1,15 @@
+dependencies:
+- name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: 13.4.3
+- name: redis
+  repository: https://charts.bitnami.com/bitnami
+  version: 18.11.0
+- name: sample-dynamodb
+  repository: file://./charts/sample-dynamodb
+  version: 0.1.0
+- name: sample-mailpit
+  repository: file://./charts/sample-mailpit
+  version: 0.1.0
+digest: sha256:fa19f5bd79c070ccd539f24e688ee27bf0cb2d91731d79b91460f309bc9fa79f
+generated: "2024-02-01T04:10:25.630018+09:00"

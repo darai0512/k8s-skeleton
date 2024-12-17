@@ -1,0 +1,20 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "sample-app.fullname" . }}-env
+  labels:
+    {{- include "sample-app.labels" . | nindent 4 }}
+data:
+  EMAIL_HOST: mailpit:1025
+  ASSET_URL_BASE: /build
+  REDIS_HOST: {{ .Values.appSettings.redis.default.host }}
+  CELERY_BROKER_URL: redis://{{ .Values.appSettings.redis.celeryBroker.host | default .Values.appSettings.redis.default.host }}:6379/{{ .Values.appSettings.redis.celeryBroker.db }}
+  CELERY_ALWAYS_EAGER: {{ .Values.appSettings.celery.alwaysEager | default true | toString | toYaml }}
+  S3_BUCKET_NAME: {{ .Values.appSettings.s3Bucket | toString | toYaml }}
+  APP_HOST_ENVIRONMENT: {{ .Values.appSettings.environment | toString | toYaml }}
+  DYNAMODB_ENDPOINT_URL: {{ .Values.appSettings.dynamoDbEndpointUrl | toString | toYaml }}
+  APP_DASHBOARD_RECAPTCHA_SITE_KEY: {{ .Values.appSettings.recaptcha.dashboard.siteKey | toString | toYaml }}
+  AWS_DEFAULT_REGION: {{ .Values.appSettings.aws.defaultRegion | toString | toYaml }}
+  DEBUGTOOLBAR_ENABLED: {{ .Values.appSettings.debugToolBar.enabled | toString | toYaml }}
+  JS_SCRIPT: ...

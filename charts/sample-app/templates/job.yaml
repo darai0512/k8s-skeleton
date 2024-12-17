@@ -1,0 +1,42 @@
+{{- if (not (.Values.appSettings.environment | eq "production")) | and .Values.appSettings.populateDatabase }}
+{{- $values := mergeOverwrite (deepCopy .Values) .Values.apps.api | default dict -}}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "sample-app.fullname" . }}-populate-db
+  labels:
+    {{- include "sample-app.labels.withKind" (list . "populate-db") | nindent 4 }}
+spec:
+  parallelism: 1
+  completions: 1
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        {{- include "sample-app.selectorLabels.withKind" (list . "populate-db") | nindent 8 }}
+    spec:
+      {{- with $values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: default
+          securityContext:
+            {{- toYaml $values.securityContext | nindent 12 }}
+          image: '{{ $values.image.repository }}{{ if $values.image.tag | or (not (eq $values.image.tag "")) }}:{{ $values.image.tag | default .Chart.AppVersion }}{{- end }}'
+          imagePullPolicy: {{ $values.image.pullPolicy }}
+          args:
+            - 'run'
+            - 'populate-db'
+          envFrom:
+            - configMapRef:
+                name: {{ include "sample-app.fullname" . }}-env
+            - secretRef:
+                name: {{ include "sample-app.fullname" . }}-env
+            - secretRef:
+                name: {{ include "sample-app.fullname" . }}-env-for-populate
+          resources:
+            {{- toYaml $values.resources | nindent 12 }}
+      restartPolicy: Never
+{{- end }}

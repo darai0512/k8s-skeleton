@@ -1,0 +1,68 @@
+---
+postgresql:
+  enabled: true
+redis:
+  enabled: true
+sample-dynamodb:
+  enabled: true
+sample-mailpit:
+  enabled: true
+image:
+  repository: 'sample-app:local'
+  tag: ''
+  pullPolicy: IfNotPresent
+securityContext:
+  readOnlyRootFilesystem: false
+  runAsNonRoot: false
+  runAsUser: 0
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+apps:
+  api:
+    service:
+      enabled: true
+      name: 'api'
+      port: 8000
+  dashboard:
+    service:
+      enabled: true
+      name: 'dashboard'
+      port: 8001
+  internal:
+    service:
+      enabled: true
+      name: 'internal'
+      port: 8002
+appSettings:
+  environment: 'development'
+  populateDatabase: true
+  debugToolBar:
+    enabled: true
+  dynamoDbEndpointUrl: 'http://dynamodb:8100'
+  aws:
+    overrides:
+      access_key_id: ''
+      secret_access_key: ''
+  db:
+    master:
+      uri: 'postgresql://sample_app:sample_app@app-postgresql:5432/sample_master'
+      replUri: 'postgresql://sample_app:sample_app@app-postgresql:5432/sample_master'
+      opUri: 'postgresql://sample_op:sample_op@app-postgresql:5432/sample_master'
+    tmp:
+      uri: 'postgresql://sample:sample@app-postgresql:5432/template1'
+  redis:
+    default:
+      host: 'app-redis-master'
+      port: 6379
+    celeryBroker:
+      host: 'app-redis-master'
+      db: 9
+    celery:
+      alwaysEager: true
+  s3Bucket: 'stage-sample-merchant'
+  recaptcha:
+    dashboard:
+      siteKey: 'hoge'
+      secretKey: 'fuga'

@@ -1,0 +1,34 @@
+apiVersion: v2
+name: sample-app
+type: application
+version: "0.1.0"
+appVersion: "0.1.0"
+description: "sample"
+# use `helm dependency build` or `helm dependency update charts/sample-app/`
+# check `helm template . | less`
+# vc用
+# $helm install sample-postgresql bitnami/postgresql -n default -f charts/postgres/values.yaml
+# todo: DB構築後にappを用意することは可能？非同期処理
+# todo: helmコマンドでの分離ではなくディレクトリ構成で依存関係を解決できる？
+# ref
+# https://hub.docker.com/r/bitnami/postgresql/tags
+# https://helm.sh/docs/topics/charts/#using-the-cli-with-tags-and-conditions
+# https://dev.classmethod.jp/articles/helm-sub-commands/
+# https://zenn.dev/amezousan/scraps/d4a678d2960be1
+dependencies:
+  - name: postgresql
+    repository: https://charts.bitnami.com/bitnami
+    version: "13.4.3"
+    condition: postgresql.enabled
+  - name: redis
+    repository: https://charts.bitnami.com/bitnami
+    version: "18.11.0"
+    condition: redis.enabled
+  - name: sample-dynamodb
+    version: "0.1.0"
+    repository: "file://./charts/sample-dynamodb"
+    condition: sample-dynamodb.enabled
+  - name: sample-mailpit
+    version: "0.1.0"
+    repository: "file://./charts/sample-mailpit"
+    condition: sample-mailpit.enabled

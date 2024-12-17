@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mailpit
+  labels:
+    app: mailpit
+    app.kubernetes.io/name: mailpit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mailpit
+      app.kubernetes.io/name: mailpit
+  template:
+    metadata:
+      labels:
+        app: mailpit
+        app.kubernetes.io/name: mailpit
+    spec:
+      containers:
+        - name: default
+          image: 'axllent/mailpit:latest'
+          ports:
+            - name: http
+              containerPort: 8025
+            - name: smtp
+              containerPort: 1025
+          resources:
+            limits:
+              cpu: 300m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          readinessProbe:
+            httpGet:
+              path: '/readyz'
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 30
+          livenessProbe:
+            httpGet:
+              path: '/livez'
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 30

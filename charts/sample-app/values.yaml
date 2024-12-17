@@ -1,0 +1,172 @@
+replicas: 1
+
+image:
+  repository: XXX.dkr.ecr.us-east-1.amazonaws.com/sample/app
+  pullPolicy: IfNotPresent
+  tag: latest
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::XXX:role/eksctl-cluster-addon-iamserviceaccount-sample
+  name: "sample-app-serviceaccount"
+  # name: "da-serviceaccount"
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext:
+  # capabilities:
+  #   drop:
+  #     - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: false
+  runAsUser: 0
+
+service:
+  type: ClusterIP
+  port: 8000
+
+resources:
+  limits:
+    cpu: 300m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 1
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+temporaryDirectory:
+  sizeLimit: 100Mi
+
+appSettings:
+  environment: 'development'
+  populateDatabase: true
+  debugToolBar:
+    enabled: false
+  aws:
+    defaultRegion: 'us-east-1'
+    overrides:
+      accessKeyId: ''
+      secretAccessKey: ''
+  dynamoDbEndpointUrl: ''
+  db:
+    master:
+      uri: 'postgresql://sample_app:sample_app@sample.us-east-1.rds.amazonaws.com:5432/sample_master'
+      replUri: 'postgresql://sample_app:sample_app@sample.us-east-1.rds.amazonaws.com:5432/sample_master'
+      opUri: 'postgresql://sample_op:sample_op@sample.us-east-1.rds.amazonaws.com:5432/sample_master'
+    tmp:
+      uri: 'postgresql://postgres:postgres@sample.us-east-1.rds.amazonaws.com:5432/postgres'
+  redis:
+    default:
+      host: 'cache.amazonaws.com'
+      port: 6379
+    celeryBroker:
+      host: 'cache.amazonaws.com'
+      db: 9
+  celery:
+    alwaysEager: true
+  s3Bucket: 'stage-sample-merchant'
+  recaptcha:
+    dashboard:
+      siteKey: 'hoge'
+      secretKey: 'fuga'
+
+apps:
+  api:
+    enabled: true
+    autoscaling:
+      enabled: false
+      minReplicas: 3
+      maxReplicas: 8
+    service:
+      enabled: true
+      name: 'api'
+      port: 8000
+  dashboard:
+    enabled: true
+    autoscaling:
+      enabled: false
+      minReplicas: 3
+      maxReplicas: 8
+    service:
+      enabled: true
+      name: 'dashboard'
+      port: 8001
+  internal:
+    enabled: true
+    autoscaling:
+      enabled: false
+      minReplicas: 3
+      maxReplicas: 8
+    service:
+      enabled: true
+      name: 'internal'
+      port: 8002
+  celeryworker-default:
+    enabled: true
+    autoscaling:
+      enabled: false
+      minReplicas: 3
+      maxReplicas: 8
+
+postgresql:
+  enabled: false
+  image:
+    tag: 14.10.0
+  auth:
+    username: sample
+    password: sample
+    postgresPassword: postgres
+  primary:
+    persistence:
+      size: 8Gi
+    initdb:
+      user: postgres
+      password: postgres
+      scripts:
+        create_roles.sh: |-
+          PGPASSWORD="$POSTGRES_INITSCRIPTS_PASSWORD" psql -v ON_ERROR_STOP=1 --username "$POSTGRES_INITSCRIPTS_USERNAME" -d postgres <<'HERE'
+          ALTER database template1 is_template=false;
+          DROP DATABASE template1;
+          CREATE DATABASE template1
+            WITH OWNER=postgres
+                 ENCODING='utf8'
+                 TABLESPACE=pg_default
+                 LC_COLLATE='C'
+                 LC_CTYPE='C'
+                 TEMPLATE template0;
+          ALTER database template1 is_template=true;
+          HERE
+
+redis:
+  enabled: false
+  architecture: standalone
+  auth:
+    enabled: false
+  master:
+    persistence:
+      size: 8Gi
+
+sample-dynamodb:
+  enabled: false
+
+sample-mailpit:
+  enabled: true

@@ -1,0 +1,10 @@
+.coverage
+*.md
+.cache
+.data
+**/__pycache__
+**/*.pyc
+**/*.pyo
+node_modules
+**/node_modules
+devspace.yaml

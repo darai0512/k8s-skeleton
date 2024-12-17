@@ -1,0 +1,11 @@
+# terraform
+.terraform/
+
+# docker
+docker-compose.override.yml
+
+minio/data/.minio.sys/*
+
+# devspace
+.devspace/
+*.tgz
